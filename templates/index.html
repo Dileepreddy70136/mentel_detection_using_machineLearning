@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindCare AI | Mental Health Detection</title>
+    <meta name="description"
+        content="AI-powered mental health detection system for real-time mood analysis and support.">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+
+<body class="dark-theme">
+    <div class="glass-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-brain"></i>
+                <span>MindCare AI</span>
+            </div>
+            <nav>
+                <ul>
+                    <li class="active"><a href="#"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="#"><i class="fas fa-history"></i> History</a></li>
+                    <li><a href="#"><i class="fas fa-phone-alt"></i> Help Lines</a></li>
+                    <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                </ul>
+            </nav>
+            <div class="user-profile">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User">
+                <div class="user-info">
+                    <p class="name">Dileep Reddy</p>
+                    <p class="status">Premium User</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header>
+                <div class="welcome-text">
+                    <h1>Analyze Your <span>Mental State</span></h1>
+                    <p>Tell us how you're feeling today. Our AI is here to listen.</p>
+                </div>
+                <div class="date-display" id="currentDate"></div>
+            </header>
+
+            <section class="analysis-section">
+                <div class="input-card card">
+                    <h3>Journal Entry (Text-based)</h3>
+                    <textarea id="moodInput"
+                        placeholder="Start typing your thoughts here... How was your day? Are you feeling stressed? Express yourself freely."></textarea>
+                    <button id="analyzeBtn" class="primary-btn">Analyze Text <i class="fas fa-magic"></i></button>
+                    <div id="loading" class="hidden">
+                        <div class="spinner"></div> Analyzing emotion...
+                    </div>
+                </div>
+
+                <div class="webcam-card card">
+                    <h3>Face Emotion Detection (Experimental)</h3>
+                    <div class="webcam-viewer">
+                        <video id="webcamFeed" autoplay playsinline></video>
+                        <canvas id="faceCanvas" class="hidden"></canvas>
+                        <div class="face-overlay" id="faceOverlay">
+                            <i class="fas fa-camera"></i>
+                            <span>Start Camera</span>
+                        </div>
+                    </div>
+                    <button id="startWebcamBtn" class="secondary-btn">Toggle Camera <i
+                            class="fas fa-video"></i></button>
+                    <div id="faceStatus" class="face-status">Face Analysis: <span>Offline</span></div>
+                </div>
+
+                <div class="result-card card hidden" id="resultCard">
+                    <div class="state-badge" id="moodBadge">Mental State: <span>Normal</span></div>
+                    <div class="score-display">
+                        <div class="score-label">Wellness Score: <span id="scoreValue">--</span></div>
+                        <div class="score-bar-bg">
+                            <div class="score-bar-fill" id="scoreBar"></div>
+                        </div>
+                        <div class="confidence-label">Model Confidence: <span id="confidenceValue">--%</span></div>
+                    </div>
+                    <div class="suggestions-container">
+                        <h3>Our Suggestions</h3>
+                        <ul id="suggestionList">
+                            <!-- Populated by JS -->
+                        </ul>
+                    </div>
+
+                    <!-- Journal Entry Card -->
+                    <div class="journal-card" id="journalCard">
+                        <div class="journal-header">
+                            <span class="journal-icon">📓</span>
+                            <h3>Your Reflective Journal</h3>
+                            <button class="journal-copy-btn" id="journalCopyBtn"
+                                title="Copy journal to clipboard">Copy</button>
+                        </div>
+                        <p id="journalText" class="journal-text">
+                            <!-- Generated by AI and populated by JS -->
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stats Bar -->
+            <section class="stats-bar">
+                <div class="mini-stat card">
+                    <div class="mini-stat-icon" style="color:#00e0ff">😊</div>
+                    <div><span id="statHappy">--</span><small>Happy</small></div>
+                </div>
+                <div class="mini-stat card">
+                    <div class="mini-stat-icon" style="color:#ff9300">😰</div>
+                    <div><span id="statStressed">--</span><small>Stressed</small></div>
+                </div>
+                <div class="mini-stat card">
+                    <div class="mini-stat-icon" style="color:#ff0064">😢</div>
+                    <div><span id="statDepressed">--</span><small>Depressed</small></div>
+                </div>
+                <div class="mini-stat card">
+                    <div class="mini-stat-icon" style="color:#7000ff">📊</div>
+                    <div><span id="statAvg">--%</span><small>Avg Score</small></div>
+                </div>
+                <div class="mini-stat card">
+                    <div class="mini-stat-icon" style="color:#00e0ff">🤖</div>
+                    <div><span id="statModelF1">--</span><small>Model F1</small></div>
+                </div>
+            </section>
+
+            <section class="dashboard-grid">
+                <div class="stat-card card">
+                    <h3>Mood Trends (Live from Database)</h3>
+                    <canvas id="moodChart"></canvas>
+                </div>
+
+                <div class="stat-card card">
+                    <h3>Recent History</h3>
+                    <div class="history-table-container">
+                        <table id="historyTable">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Snippet</th>
+                                    <th>Mood</th>
+                                    <th>Score</th>
+                                    <th>Conf.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JS from /api/history -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Script Import -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>

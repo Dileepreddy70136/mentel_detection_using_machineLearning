@@ -1,0 +1,11 @@
+{
+  "version": "2.0",
+  "labels": {
+    "0": "Happy/Normal",
+    "1": "Stressed/Anxious",
+    "2": "Depressed/Sad"
+  },
+  "cv_f1_mean": 0.7321,
+  "dataset_size": 75,
+  "features": "TF-IDF bigrams, NLTK lemmatization, balanced class weights"
+}
